@@ -24,7 +24,7 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
                 {post.title}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                By {post.author} | {new Date(Number(post.timestamp) / 1000000).toLocaleString()}
+                By {post.author.toString()} | {new Date(Number(post.timestamp) / 1000000).toLocaleString()}
               </Typography>
               <Typography variant="body1">{post.body}</Typography>
             </CardContent>

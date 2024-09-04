@@ -6,12 +6,13 @@ export interface Post {
   'id' : bigint,
   'title' : string,
   'body' : string,
-  'author' : string,
+  'author' : Principal,
   'timestamp' : Time,
 }
 export type Time = bigint;
 export interface _SERVICE {
-  'createPost' : ActorMethod<[string, string, string], bigint>,
+  'createPost' : ActorMethod<[string, string], bigint>,
+  'getOwnPosts' : ActorMethod<[], Array<Post>>,
   'getPosts' : ActorMethod<[], Array<Post>>,
 }
 export declare const idlFactory: IDL.InterfaceFactory;

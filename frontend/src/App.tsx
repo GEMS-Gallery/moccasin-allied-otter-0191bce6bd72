@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Box, CircularProgress, AppBar, Toolbar } from '@mui/material';
+import { Container, Typography, Box, CircularProgress, AppBar, Toolbar, Button } from '@mui/material';
+import { AuthClient } from '@dfinity/auth-client';
 import { backend } from 'declarations/backend';
 import PostList from './components/PostList';
 import CreatePostForm from './components/CreatePostForm';
@@ -15,10 +16,42 @@ interface Post {
 function App() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authClient, setAuthClient] = useState<AuthClient | null>(null);
 
   useEffect(() => {
-    fetchPosts();
+    initAuth();
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchPosts();
+    }
+  }, [isAuthenticated]);
+
+  const initAuth = async () => {
+    const client = await AuthClient.create();
+    setAuthClient(client);
+    const authenticated = await client.isAuthenticated();
+    setIsAuthenticated(authenticated);
+  };
+
+  const login = async () => {
+    if (authClient) {
+      await authClient.login({
+        identityProvider: 'https://identity.ic0.app/',
+        onSuccess: () => setIsAuthenticated(true),
+      });
+    }
+  };
+
+  const logout = async () => {
+    if (authClient) {
+      await authClient.logout();
+      setIsAuthenticated(false);
+      setPosts([]);
+    }
+  };
 
   const fetchPosts = async () => {
     try {
@@ -31,9 +64,9 @@ function App() {
     }
   };
 
-  const handleCreatePost = async (title: string, body: string, author: string) => {
+  const handleCreatePost = async (title: string, body: string) => {
     try {
-      await backend.createPost(title, body, author);
+      await backend.createPost(title, body);
       fetchPosts();
     } catch (error) {
       console.error('Error creating post:', error);
@@ -44,7 +77,12 @@ function App() {
     <div className="min-h-screen bg-purple-500">
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6">Crypto Blog</Typography>
+          <Typography variant="h6" className="flex-grow">Crypto Blog</Typography>
+          {isAuthenticated ? (
+            <Button color="inherit" onClick={logout}>Logout</Button>
+          ) : (
+            <Button color="inherit" onClick={login}>Login</Button>
+          )}
         </Toolbar>
       </AppBar>
       <Box
@@ -56,13 +94,21 @@ function App() {
         </Typography>
       </Box>
       <Container className="mt-8">
-        <CreatePostForm onCreatePost={handleCreatePost} />
-        {loading ? (
-          <Box className="flex justify-center mt-8">
-            <CircularProgress />
-          </Box>
+        {isAuthenticated ? (
+          <>
+            <CreatePostForm onCreatePost={handleCreatePost} />
+            {loading ? (
+              <Box className="flex justify-center mt-8">
+                <CircularProgress />
+              </Box>
+            ) : (
+              <PostList posts={posts} />
+            )}
+          </>
         ) : (
-          <PostList posts={posts} />
+          <Typography variant="h5" className="text-center mt-8">
+            Please login to view and create posts
+          </Typography>
         )}
       </Container>
     </div>

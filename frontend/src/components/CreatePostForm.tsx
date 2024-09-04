@@ -3,17 +3,17 @@ import { useForm, Controller } from 'react-hook-form';
 import { TextField, Button, Box, CircularProgress } from '@mui/material';
 
 interface CreatePostFormProps {
-  onCreatePost: (title: string, body: string, author: string) => Promise<void>;
+  onCreatePost: (title: string, body: string) => Promise<void>;
 }
 
 const CreatePostForm: React.FC<CreatePostFormProps> = ({ onCreatePost }) => {
   const { control, handleSubmit, reset } = useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmit = async (data: { title: string; body: string; author: string }) => {
+  const onSubmit = async (data: { title: string; body: string }) => {
     setIsSubmitting(true);
     try {
-      await onCreatePost(data.title, data.body, data.author);
+      await onCreatePost(data.title, data.body);
       reset();
     } catch (error) {
       console.error('Error creating post:', error);
@@ -55,23 +55,6 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onCreatePost }) => {
               fullWidth
               multiline
               rows={4}
-              error={!!error}
-              helperText={error?.message}
-              disabled={isSubmitting}
-            />
-          )}
-        />
-        <Controller
-          name="author"
-          control={control}
-          defaultValue=""
-          rules={{ required: 'Author is required' }}
-          render={({ field, fieldState: { error } }) => (
-            <TextField
-              {...field}
-              label="Author"
-              variant="outlined"
-              fullWidth
               error={!!error}
               helperText={error?.message}
               disabled={isSubmitting}
