@@ -1,17 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { TextField, Button, Box } from '@mui/material';
+import { TextField, Button, Box, CircularProgress } from '@mui/material';
 
 interface CreatePostFormProps {
-  onCreatePost: (title: string, body: string, author: string) => void;
+  onCreatePost: (title: string, body: string, author: string) => Promise<void>;
 }
 
 const CreatePostForm: React.FC<CreatePostFormProps> = ({ onCreatePost }) => {
   const { control, handleSubmit, reset } = useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmit = (data: { title: string; body: string; author: string }) => {
-    onCreatePost(data.title, data.body, data.author);
-    reset();
+  const onSubmit = async (data: { title: string; body: string; author: string }) => {
+    setIsSubmitting(true);
+    try {
+      await onCreatePost(data.title, data.body, data.author);
+      reset();
+    } catch (error) {
+      console.error('Error creating post:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -30,6 +38,7 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onCreatePost }) => {
               fullWidth
               error={!!error}
               helperText={error?.message}
+              disabled={isSubmitting}
             />
           )}
         />
@@ -48,6 +57,7 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onCreatePost }) => {
               rows={4}
               error={!!error}
               helperText={error?.message}
+              disabled={isSubmitting}
             />
           )}
         />
@@ -64,11 +74,12 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onCreatePost }) => {
               fullWidth
               error={!!error}
               helperText={error?.message}
+              disabled={isSubmitting}
             />
           )}
         />
-        <Button type="submit" variant="contained" color="primary">
-          Create Post
+        <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>
+          {isSubmitting ? <CircularProgress size={24} /> : 'Create Post'}
         </Button>
       </Box>
     </form>

@@ -41,7 +41,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-purple-500">
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6">Crypto Blog</Typography>
